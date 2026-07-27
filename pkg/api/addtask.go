@@ -15,21 +15,21 @@ import (
 func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	task, err := decodeTask(r)
 	if err != nil {
-		writeError(w, err.Error())
+		writeError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if err := validateTask(task); err != nil {
-		writeError(w, err.Error())
+		writeError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	id, err := db.AddTask(task)
 	if err != nil {
-		writeError(w, fmt.Sprintf("не удалось добавить задачу: %v", err))
+		writeInternalError(w, "не удалось добавить задачу", err)
 		return
 	}
 
-	writeJSON(w, map[string]string{"id": strconv.FormatInt(id, 10)})
+	writeJSON(w, map[string]string{"id": strconv.FormatInt(id, 10)}, http.StatusCreated)
 }
 
 func decodeTask(r *http.Request) (*db.Task, error) {

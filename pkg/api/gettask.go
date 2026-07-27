@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,19 +11,19 @@ import (
 func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimSpace(r.URL.Query().Get("id"))
 	if id == "" {
-		writeError(w, "не указан идентификатор задачи")
+		writeError(w, "не указан идентификатор задачи", http.StatusBadRequest)
 		return
 	}
 
 	task, err := db.GetTask(id)
 	if err != nil {
 		if errors.Is(err, db.ErrTaskNotFound) {
-			writeError(w, "задача не найдена")
+			writeError(w, "задача не найдена", http.StatusNotFound)
 		} else {
-			writeError(w, fmt.Sprintf("не удалось получить задачу: %v", err))
+			writeInternalError(w, "не удалось получить задачу", err)
 		}
 		return
 	}
 
-	writeJSON(w, task)
+	writeJSON(w, task, http.StatusOK)
 }

@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,26 +11,26 @@ import (
 func updateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	task, err := decodeTask(r)
 	if err != nil {
-		writeError(w, err.Error())
+		writeError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	if strings.TrimSpace(task.ID) == "" {
-		writeError(w, "не указан идентификатор задачи")
+		writeError(w, "не указан идентификатор задачи", http.StatusBadRequest)
 		return
 	}
 	if err := validateTask(task); err != nil {
-		writeError(w, err.Error())
+		writeError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := db.UpdateTask(task); err != nil {
 		if errors.Is(err, db.ErrTaskNotFound) {
-			writeError(w, "задача не найдена")
+			writeError(w, "задача не найдена", http.StatusNotFound)
 		} else {
-			writeError(w, fmt.Sprintf("не удалось обновить задачу: %v", err))
+			writeInternalError(w, "не удалось обновить задачу", err)
 		}
 		return
 	}
 
-	writeJSON(w, struct{}{})
+	writeJSON(w, struct{}{}, http.StatusOK)
 }

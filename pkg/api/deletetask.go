@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -12,18 +11,18 @@ import (
 func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimSpace(r.URL.Query().Get("id"))
 	if id == "" {
-		writeError(w, "не указан идентификатор задачи")
+		writeError(w, "не указан идентификатор задачи", http.StatusBadRequest)
 		return
 	}
 
 	if err := db.DeleteTask(id); err != nil {
 		if errors.Is(err, db.ErrTaskNotFound) {
-			writeError(w, "задача не найдена")
+			writeError(w, "задача не найдена", http.StatusNotFound)
 		} else {
-			writeError(w, fmt.Sprintf("не удалось удалить задачу: %v", err))
+			writeInternalError(w, "не удалось удалить задачу", err)
 		}
 		return
 	}
 
-	writeJSON(w, struct{}{})
+	writeJSON(w, struct{}{}, http.StatusOK)
 }

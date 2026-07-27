@@ -37,6 +37,11 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 }
 
 func nextDateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeMethodNotAllowed(w, http.MethodGet)
+		return
+	}
+
 	now := time.Now()
 	if value := r.FormValue("now"); value != "" {
 		parsed, err := time.Parse(DateFormat, value)

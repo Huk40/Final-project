@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,13 +11,13 @@ import (
 
 func doneTaskHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		writeError(w, "метод не поддерживается")
+		writeMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	id := strings.TrimSpace(r.URL.Query().Get("id"))
 	if id == "" {
-		writeError(w, "не указан идентификатор задачи")
+		writeError(w, "не указан идентификатор задачи", http.StatusBadRequest)
 		return
 	}
 
@@ -42,13 +41,13 @@ func doneTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, struct{}{})
+	writeJSON(w, struct{}{}, http.StatusOK)
 }
 
 func writeDoneError(w http.ResponseWriter, err error) {
 	if errors.Is(err, db.ErrTaskNotFound) {
-		writeError(w, "задача не найдена")
+		writeError(w, "задача не найдена", http.StatusNotFound)
 	} else {
-		writeError(w, fmt.Sprintf("не удалось выполнить задачу: %v", err))
+		writeInternalError(w, "не удалось выполнить задачу", err)
 	}
 }
